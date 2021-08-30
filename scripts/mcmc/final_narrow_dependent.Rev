@@ -1,0 +1,106 @@
+path = ""
+
+data = readDiscreteCharacterData(path + "narrow_dataset.nex")
+
+nSites <- data.nchar()
+
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+trees = readTrees(path + "ieo_hundred.nex", treetype="non-clock")
+
+treetrace = treeTrace(trees)
+psi ~ dnEmpiricalTree(treetrace)
+moves.append( mvEmpiricalTree(psi, weight=5.0) )
+
+#Read in Chang A3 MAP tree
+map_tree = readBranchLengthTrees(path + "ChangA3.tree")[1]
+
+
+#Hyperprior distributions
+n_slow ~ dnUniformNatural(3, 8)
+moves.append( mvRandomIntegerWalk(n_slow, weight = 2.0) )
+
+n_fast ~ dnUniformNatural(9, 17)
+moves.append( mvRandomIntegerWalk(n_fast, weight = 2.0) )
+
+#Hyperparameter
+rate_pr_slow := psi.treeLength() / n_slow
+rate_pr_fast := psi.treeLength() / n_fast
+
+
+#Gain of indefinite article with no definiteness marker
+rate_00_01 ~ dnExponential(rate_pr_slow)
+
+#Gain of definite article with no indefinite article
+rate_00_10 ~ dnExponential(rate_pr_fast)
+
+#Gain of definite article with indefinite article
+rate_01_11 ~ dnExponential(rate_pr_slow)
+
+#Gain of indefinite article with definiteness marker
+rate_10_11 ~ dnExponential(rate_pr_fast)
+
+
+moves.append( mvScale( rate_00_01, lambda=1.0, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_00_10, lambda=1.0, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_01_11, lambda=1.0, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_10_11, lambda=1.0, tune=TRUE, weight=2.0 ) )
+
+moves.append( mvScale( rate_00_01, lambda=0.1, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_00_10, lambda=0.1, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_01_11, lambda=0.1, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_10_11, lambda=0.1, tune=TRUE, weight=2.0 ) )
+
+moves.append( mvScale( rate_00_01, lambda=0.01, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_00_10, lambda=0.01, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_01_11, lambda=0.01, tune=TRUE, weight=2.0 ) )
+moves.append( mvScale( rate_10_11, lambda=0.01, tune=TRUE, weight=2.0 ) )
+
+rates := [ [ 0.0, rate_00_10 , rate_00_01 , 0.0 ],
+           [ 0.0 , 0.0, 0.0, rate_10_11  ],
+           [ 0.0 , 0.0, 0.0, rate_01_11  ], 
+           [ 0.0, 0.0 , 0.0 , 0.0 ] ]
+
+Q := fnFreeK( rates , rescaled=FALSE ) 
+
+rf <- [1.0, 0.0, 0.0, 0.0] 
+
+phyMorph ~ dnPhyloCTMC(tree=psi, Q=Q, rootFrequencies=rf, type="Standard", nSites=1)
+
+phyMorph.clamp(data)
+
+
+mymodel = model ( Q )
+
+n_gen = 1000
+
+monitors.append( mnModel(filename="output/final_narrow_dependent.log", printgen=n_gen) )
+
+monitors.append( mnScreen(printgen=n_gen) )
+
+
+monitors.append( mnFile( filename="output/final_narrow_dependent.trees", printgen=n_gen, psi ) ) 
+
+
+monitors.append( mnJointConditionalAncestralState(tree=psi, ctmc=phyMorph, filename="output/final_narrow_dependent.states", type="Standard", printgen=n_gen, withStartStates=FALSE) ) 
+
+
+monitors.append( mnStochasticCharacterMap(ctmc=phyMorph, filename="output/final_narrow_dependent.maps", printgen=n_gen) )
+
+
+mymcmc = mcmc(mymodel, monitors, moves, nruns=6, combine="mixed")
+
+
+#Comment this out when you restart from checkpoint
+mymcmc.burnin(generations=200000,tuningInterval=200)
+
+#Comment this out for the first run  
+#mymcmc.initializeFromCheckpoint("output/final_narrow_dependent.state") 
+
+mymcmc.run(generations=1000000, checkpointInterval=1000, checkpointFile="output/final_narrow_dependent.state")
+
+
+mymcmc.operatorSummary()
+
+
