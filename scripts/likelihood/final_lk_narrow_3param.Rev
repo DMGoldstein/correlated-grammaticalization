@@ -1,0 +1,99 @@
+path = ""
+data = readDiscreteCharacterData(path + "final_narrow_dataset.nex")
+
+n_sites <- data.nchar()
+
+
+moves = VectorMoves()
+monitors = VectorMonitors()
+
+trees = readTrees(path + "ieo_hundred.nex", treetype="non-clock")
+
+treetrace = treeTrace(trees)
+
+#Tree distribution
+psi ~ dnEmpiricalTree(treetrace)
+
+moves.append( mvEmpiricalTree(psi, weight=2) )
+
+#Chang A3 MAP tree
+map_tree <- readBranchLengthTrees(path + "ChangA3.tree")[1]
+
+#Hyperprior distributions
+n_def_fast ~ dnUniform(12, 17)
+
+moves.append( mvSlide(n_def_fast, delta=1.0, tune=true, weight=2.0) )
+moves.append( mvSlide(n_def_fast, delta=0.1, tune=true, weight=2.0) )
+moves.append( mvSlide(n_def_fast, delta=0.01, tune=true, weight=2.0) )
+
+n_def_slow ~ dnUniform(0, 5)
+
+moves.append( mvSlide(n_def_slow, delta=1.0, tune=true, weight=2.0) )
+moves.append( mvSlide(n_def_slow, delta=0.1, tune=true, weight=2.0) )
+moves.append( mvSlide(n_def_slow, delta=0.01, tune=true, weight=2.0) )
+
+
+rate_pr_01_11 := psi.treeLength() / n_def_fast
+rate_pr_00_10 := psi.treeLength() / n_def_slow
+
+indef_gain_pr := psi.treeLength() / 15
+
+#Gain of indefinite article with no definiteness marker
+rate_indef ~ dnExponential(indef_gain_pr)
+#Gain of definiteness marker with no indefinite article
+rate_00_10 ~ dnExponential(rate_pr_00_10)
+#Gain of definiteness marker with indefinite article
+rate_01_11 ~ dnExponential(rate_pr_01_11)
+
+
+moves.append( mvScale( rate_00_10, lambda=1, tune=true, weight=2 ) )
+moves.append( mvScale( rate_01_11, lambda=1, tune=true, weight=2 ) )
+moves.append( mvScale( rate_indef, lambda=1, tune=true, weight=2 ) )
+
+moves.append( mvScale( rate_00_10, lambda=0.1, tune=true, weight=2 ) )
+moves.append( mvScale( rate_01_11, lambda=0.1, tune=true, weight=2 ) )
+moves.append( mvScale( rate_indef, lambda=0.1, tune=true, weight=2 ) )
+
+moves.append( mvScale( rate_00_10, lambda=0.01, tune=true, weight=2 ) )
+moves.append( mvScale( rate_01_11, lambda=0.01, tune=true, weight=2 ) )
+moves.append( mvScale( rate_indef, lambda=0.01, tune=true, weight=2 ) )
+
+rates := [ [ 0.0, rate_00_10 , rate_indef , 0.0 ],
+           [ 0.0 , 0.0, 0.0, rate_indef  ],
+           [ 0.0 , 0.0, 0.0, rate_01_11  ], 
+           [ 0.0, 0.0 , 0.0 , 0.0 ] ]
+
+#Rate matrix
+Q := fnFreeK(rates, rescaled=FALSE ) 
+
+#Root frequencies
+rf <- [1.0, 0.0, 0.0, 0.0]
+
+
+
+phyMorph ~ dnPhyloCTMC(tree=psi, Q=Q, rootFrequencies=rf, type="Standard", nSites=1) 
+phyMorph.clamp(data)
+
+mymodel = model (Q)
+
+
+####################################
+##### Power-posterior analysis #####
+####################################
+
+
+pow_p = powerPosterior(mymodel, moves, monitors, "output/Corr_Narrow_Bin_Dependent_RF_Pi_Gain_TreeSet_3ParamIndef_powp.out", cats=127, sampleFreq=10)
+pow_p.burnin(generations=2000,tuningInterval=200)
+pow_p.run(generations=10000)
+
+
+###################################
+#### Stepping-stone analysis ######
+###################################
+
+ss = steppingStoneSampler(file="output/Corr_Narrow_Bin_Dependent_RF_Pi_Gain_TreeSet_3ParamIndef_powp.out", powerColumnName="power", likelihoodColumnName="likelihood")
+write("Stepping stone marginal likelihood:\t", ss.marginal() )
+
+ps = pathSampler(file="output/Corr_Narrow_Bin_Dependent_RF_Pi_Gain_TreeSet_3ParamIndef_powp.out", powerColumnName="power", likelihoodColumnName="likelihood")
+write("Path-sampling marginal likelihood:\t", ps.marginal() )
+
