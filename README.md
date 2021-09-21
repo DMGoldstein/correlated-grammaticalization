@@ -14,7 +14,7 @@ The folder `scripts` contains two sub-folders, `likelihood` and `mcmc`. The form
 
 ## Trees
 
-There are two files in the `Trees` folder, `ChangA3.tree` and `ieo_hundred.nex`. The first of these is the MAP tree from the A3 dataset and model of Chang et al. 2015 (which is configuration file `a1-c2-d0-g2-l2-s1-t1-z3` in their supplementary materials). The second is a sample of one hundred trees generated from this model and dataset. 
+There are two files in the `trees` folder, `ChangA3.tree` and `ieo_hundred.nex`. The first of these is the MAP tree from the A3 dataset and model of Chang et al. 2015 (which is configuration file `a1-c2-d0-g2-l2-s1-t1-z3` in their supplementary materials). The second is a sample of one hundred trees generated from this model and dataset. 
 
 ## Results for the analysis of the broad dataset
 
