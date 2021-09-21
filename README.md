@@ -2,11 +2,11 @@
 
 ## Overview
 
-This repository contains the data and source code for the paper "There's no escaping phylogenetics."
+This repository contains the data and source code for the paper "Correlated grammaticalization: The rise of articles in Indo-European."
 
 ## Data
 
-The data used in the paper can be found in the folder `data`, which contains two Nexus files, `final_narrow_dataset.nex` and `final_broad_dataset.nex`. These are the narrow and broad datasets, respectively. 
+The data used in the paper can be found in the folder `data`, which contains two Nexus files, `final_narrow_dataset.nex` and `final_broad_dataset.nex`. These are the narrow and broad datasets described in the paper. 
 
 ## Scripts
 
