@@ -18,5 +18,5 @@ There are two files in the `Trees` folder, `ChangA3.tree` and `ieo_hundred.nex`.
 
 ## Results for the analysis of the broad dataset
 
-The folder `broad-dataset-results` contains a `.pdf` file with an overview of the broad dataset and the posterior distributions of the rates obtained with `final_broad_dataset.nex` and `final_broad_dependent.Rev`.
+The folder `broad_dataset_results` contains a `.pdf` file with an overview of the broad dataset and the posterior distributions of the rates obtained with `final_broad_dataset.nex` and `final_broad_dependent.Rev`.
 
