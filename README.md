@@ -10,7 +10,7 @@ The data used in the paper can be found in the folder `data`, which contains two
 
 ## Scripts
 
-The folder `scripts` contains two sub-folders, `likelihood` and `mcmc`. The former contains the `.Rev` scripts for calculating the marginal likelihoods and the latter the scripts for the MCMC sampling of the posterior distributions. The analyses for both were carried out with RevBayes v.1.1.1.
+The folder `scripts` contains two sub-folders, `likelihood` and `mcmc`. The former contains the `.Rev` scripts for calculating the marginal likelihoods and the latter the scripts for the MCMC sampling of the posterior distributions. The scripts labeled `_dependent` have four rate parameters, while those labeled `_3param` have three. All analyses were carried out with RevBayes v.1.1.1.
 
 ## Trees
 
