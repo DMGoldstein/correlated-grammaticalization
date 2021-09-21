@@ -58,7 +58,7 @@ Q := fnFreeK(rates, rescaled=FALSE )
 #Root frequencies
 rf <- [1.0, 0.0, 0.0, 0.0]
 
-phyMorph ~ dnPhyloCTMC(tree=psi, Q=Q, rootFrequencies=rf, type="Standard", nSites=1) #, coding="variable"
+phyMorph ~ dnPhyloCTMC(tree=psi, Q=Q, rootFrequencies=rf, type="Standard", nSites=1)
 
 phyMorph.clamp(data)
 
