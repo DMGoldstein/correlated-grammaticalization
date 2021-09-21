@@ -6,7 +6,7 @@ nSites <- data.nchar()
 moves = VectorMoves()
 monitors = VectorMonitors()
 
-trees = readTrees(path + "ieo_hundred.nex", treetype="clock")
+trees = readTrees(path + "ieo_hundred.nex", treetype="non-clock")
 
 treetrace = treeTrace(trees)
 psi ~ dnEmpiricalTree(treetrace)
